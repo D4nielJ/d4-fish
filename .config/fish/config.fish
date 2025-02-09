@@ -1,4 +1,25 @@
 if status is-interactive
+    # Load variables from .env-global
+    if not test -e ~/.env-global
+        touch ~/.env-global
+    end
+
+    for line in (cat ~/.env-global | string trim)
+        # Skip empty lines and comments
+        if string match -qr '^[^#]' $line
+            # Extract key and value using fish's built-in string functions
+            set -l key (string split -m1 = $line)[1]
+            set -l value (string split -m1 = $line)[2]
+
+            # Set the variable if the key is valid
+            if string match -qr '^[a-zA-Z_][a-zA-Z0-9_]*$' $key
+                set -gx $key $value
+            else
+                echo "Warning: Invalid variable name '$key' in $argv"
+            end
+        end
+    end
+
     function fish_greeting
         echo "🌿 Breathe in. Breathe out. Code with intention."
     end
@@ -9,31 +30,45 @@ if status is-interactive
     end
 
     function wcd -a directory
-        cd (wslpath $directory)
+        if test -z "$directory"
+            echo "Usage: wcd <windows-path>"
+            return 1
+        end
+        set -l path (wslpath $directory 2>/dev/null)
+        if test $status -eq 0
+            cd $path
+        else
+            echo "Error: Invalid Windows path '$directory'"
+            return 1
+        end
     end
 
     function take
+        if test -z "$argv"
+            echo "Usage: take <directory>"
+            return 1
+        end
         mkdir -p $argv && cd $argv
     end
 
-    # exa functions
+    # eza functions
     function ll
-        exa -l --header --icons --git $argv
+        eza -l --header --icons --git $argv
     end
 
     # Long listing with tree vie
     function lt
-        exa -l --header --icons --git --tree $argv
+        eza -l --header --icons --git --tree $argv
     end
 
     # List all files (including hidden)
     function la
-        exa -la --header --icons --git $argv
+        eza -la --header --icons --git $argv
     end
 
     # Show only directories
     function ldir
-        exa -l --header --icons --git --only-dirs $argv
+        eza -l --header --icons --git --only-dirs $argv
     end
 
     # aliases
@@ -52,7 +87,7 @@ if status is-interactive
     alias wenv get_win_var
     alias ~~ 'wcd (get_win_var USERPROFILE)'
     alias pr 'wcd (get_win_var USERPROFILE)/projects'
-    alias dev 'wcd (get_win_var USERPROFILE)/dev'
+    alias dev 'cd ~/dev'
     alias dwl 'wcd (get_win_var USERPROFILE)/downloads'
     alias cfg 'cd ~/.config'
     alias ls ll
@@ -60,3 +95,6 @@ if status is-interactive
     alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
     alias dt dotfiles
 end
+
+# ~/.config/fish/config.fish
+starship init fish | source
