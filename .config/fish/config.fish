@@ -20,81 +20,12 @@ if status is-interactive
         end
     end
 
-    function fish_greeting
-        echo "🌿 Breathe in. Breathe out. Code with intention."
+    if test -e ~/.profile.fish
+        source ~/.profile.fish
+    else
+        echo "Warning: ~/.profile.fish not found"
     end
 
-    # Add this to your config.fish to make Windows variables available
-    function get_win_var -a var_name
-        cmd.exe /c "echo %$var_name%" 2>/dev/null | tr -d '\r'
-    end
-
-    function wcd -a directory
-        if test -z "$directory"
-            echo "Usage: wcd <windows-path>"
-            return 1
-        end
-        set -l path (wslpath $directory 2>/dev/null)
-        if test $status -eq 0
-            cd $path
-        else
-            echo "Error: Invalid Windows path '$directory'"
-            return 1
-        end
-    end
-
-    function take
-        if test -z "$argv"
-            echo "Usage: take <directory>"
-            return 1
-        end
-        mkdir -p $argv && cd $argv
-    end
-
-    # eza functions
-    function ll
-        eza -l --header --icons --git $argv
-    end
-
-    # Long listing with tree vie
-    function lt
-        eza -l --header --icons --git --tree $argv
-    end
-
-    # List all files (including hidden)
-    function la
-        eza -la --header --icons --git $argv
-    end
-
-    # Show only directories
-    function ldir
-        eza -l --header --icons --git --only-dirs $argv
-    end
-
-    # aliases
-    alias rld 'source ~/.config/fish/config.fish'
-
-    # git commands
-    alias fetch 'git fetch'
-    alias clone 'git clone'
-    alias pull 'git pull'
-    alias merge 'git merge'
-    alias add 'git add'
-    alias gco 'git checkout'
-    alias gcob 'git checkout -b'
-
-    # explorer helpers
-    alias wenv get_win_var
-    alias ~~ 'wcd (get_win_var USERPROFILE)'
-    alias pr 'wcd (get_win_var USERPROFILE)/projects'
-    alias dev 'cd ~/dev'
-    alias dwl 'wcd (get_win_var USERPROFILE)/downloads'
-    alias cfg 'cd ~/.config'
-    alias ls ll
-    alias pp 'code ~/.config/fish/config.fish'
-    alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-    alias dt dotfiles
+    # ~/.config/fish/config.fish
+    starship init fish | source
 end
-
-# ~/.config/fish/config.fish
-starship init fish | source
