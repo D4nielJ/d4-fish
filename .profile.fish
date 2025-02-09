@@ -1,3 +1,6 @@
+# variables
+set --universal nvm_default_version lts
+
 # Add this to your config.fish to make Windows variables available
 function get_win_var -a var_name
     cmd.exe /c "echo %$var_name%" 2>/dev/null | tr -d '\r'
@@ -100,7 +103,7 @@ abbr pn pnpm
 abbr dlx 'pnpm dlx'
 
 # miscelanous
-abbr pp 'code ~/.config/fish/config.fish'
+abbr pp 'code ~/.profile.fish'
 abbr rld 'source ~/.config/fish/config.fish'
 abbr vim nvim
 abbr g git
