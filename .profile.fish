@@ -29,8 +29,11 @@ function take
     mkdir -p $argv && cd $argv
 end
 
+bind \ec fish_clipboard_copy
+
 # abbreviatures
 abbr rld 'source ~/.config/fish/config.fish'
+abbr vim nvim
 
 # eza functions
 abbr ll 'eza -l --header --icons --git'
@@ -57,4 +60,4 @@ abbr cfg 'cd ~/.config'
 abbr ls ll
 abbr pp 'code ~/.config/fish/config.fish'
 abbr dotfiles 'git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-abbr dt dotfiles
+abbr dt 'git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'

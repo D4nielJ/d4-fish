@@ -26,6 +26,16 @@ if status is-interactive
         echo "Warning: ~/.profile.fish not found"
     end
 
+    # Enable autosuggestions
+    set -g fish_autosuggestion_enabled 1
+
     # ~/.config/fish/config.fish
     starship init fish | source
 end
+
+# pnpm
+set -gx PNPM_HOME "/home/d4nielj/.local/share/pnpm"
+if not string match -q -- $PNPM_HOME $PATH
+    set -gx PATH "$PNPM_HOME" $PATH
+end
+# pnpm end
