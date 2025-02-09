@@ -1,7 +1,3 @@
-function fish_greeting
-    echo "🌿 Breathe in. Breathe out. Code with intention."
-end
-
 # Add this to your config.fish to make Windows variables available
 function get_win_var -a var_name
     cmd.exe /c "echo %$var_name%" 2>/dev/null | tr -d '\r'
@@ -29,14 +25,36 @@ function take
     mkdir -p $argv && cd $argv
 end
 
+function init_prettier -d "Initialize .prettierrc in current directory"
+    cp $HOME/.config/prettier/.prettierrc.json .prettierrc.json
+end
+
+# Usage:
+# Stop-Port 3000
+# Stop-Port 3000,3001,3002
+function stop_port -d "Use it to stop the process in certain port"
+    if test (count $argv) -eq 0
+        echo "Usage: stop-port PORT1 [PORT2 PORT3 ...]"
+        return 1
+    end
+
+    for port in $argv
+        set process (lsof -i :$port | awk 'NR==2 {print $2}')
+        if test -n "$process"
+            kill -9 $process
+            echo "Killed process $process using port $port"
+        else
+            echo "No process found using port $port"
+        end
+    end
+end
+
 bind \ec fish_clipboard_copy
 
 # abbreviatures
-abbr rld 'source ~/.config/fish/config.fish'
-abbr vim nvim
-
 # eza functions
 abbr ll 'eza -l --header --icons --git'
+abbr ls 'eza -l --header --icons --git'
 abbr lt 'eza -l --header --icons --git --tree'
 abbr la 'eza -la --header --icons --git'
 abbr ldir 'eza -l --header --icons --git --only-dirs'
@@ -49,6 +67,21 @@ abbr merge 'git merge'
 abbr add 'git add'
 abbr gco 'git checkout'
 abbr gcob 'git checkout -b'
+abbr stat 'git status'
+abbr gcm 'git commit'
+abbr glog 'git log'
+abbr lg 'git log --pretty=format:"%C(auto)%h %C(yellow)%d %C(reset)%s %C(bold blue)<%an>%C(reset)" --graph'
+abbr gam 'git add . && git commit -m'
+abbr gst 'git stash'
+abbr gpop 'git stash pop'
+abbr gpob 'git pull origin (git branch --show-current)'
+abbr gpub 'git push --set-upstream origin (git branch --show-current)'
+abbr grb 'git rebase'
+abbr grs 'git reset'
+abbr gbr 'git branch'
+abbr gbd 'git branch -d'
+abbr gcp 'git cherry-pick'
+abbr gdf 'git diff'
 
 # explorer helpers
 abbr wenv get_win_var
@@ -57,7 +90,34 @@ abbr pr 'wcd (get_win_var USERPROFILE)/projects'
 abbr dev 'cd ~/dev'
 abbr dwl 'wcd (get_win_var USERPROFILE)/downloads'
 abbr cfg 'cd ~/.config'
-abbr ls ll
-abbr pp 'code ~/.config/fish/config.fish'
+
+#dotfiles git manager
 abbr dotfiles 'git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 abbr dt 'git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+
+# pnpm
+abbr pn pnpm
+abbr dlx 'pnpm dlx'
+
+# miscelanous
+abbr pp 'code ~/.config/fish/config.fish'
+abbr rld 'source ~/.config/fish/config.fish'
+abbr vim nvim
+abbr g git
+abbr idea idea64.exe
+abbr ii explorer.exe
+abbr dn deno
+
+# Insecure otaku stuff (CRINGE):
+function genshin
+    powershell.exe -c "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-Expression \"&{\$((New-Object System.Net.WebClient).DownloadString('https://gist.github.com/MadeBaruna/1d75c1d37d19eca71591ec8a31178235/raw/getlink.ps1'))} global\""
+end
+
+function zzz
+    powershell.exe -c "iwr -useb stardb.gg/signal | iex"
+end
+
+# End
+function fish_greeting
+    echo "🌿 Breathe in. Breathe out. Code with intention."
+end
