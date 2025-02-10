@@ -8,6 +8,11 @@ error_handler() {
 }
 trap 'error_handler ${LINENO}' ERR
 
+if ! sudo -n true 2>/dev/null; then
+  echo "Error: This script requires sudo privileges. Please run as a user with sudo access." >&2
+  exit 1
+fi
+
 # Validate environment
 USER_HOME="${HOME:-}"
 if [ -z "$USER_HOME" ]; then
@@ -64,12 +69,6 @@ echo "Username: $git_username"
 echo "Email: $git_email"
 echo "==================================="
 read -rp "Press Enter to continue or Ctrl+C to abort..."
-
-# Verify sudo access
-if ! sudo -v; then
-  echo "This script requires sudo privileges" >&2
-  exit 1
-fi
 
 # Check internet connection
 if ! ping -c 1 google.com >/dev/null 2>&1; then
@@ -136,16 +135,21 @@ if ! curl -fsSL https://get.pnpm.io/install.sh | sh -; then
 fi
 
 # Install fisher and plugins
-fish_commands=(
-  "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher"
-  "fisher install jethrokuan/z"
-  "fisher install PatrickF1/fzf.fish"
-  "fisher install jorgebucaran/nvm.fish"
+if ! fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher"; then
+  echo "Failed to install fisher" >&2
+  exit 1
+fi
+
+# Install fisher plugins
+fisher_plugins=(
+  "jethrokuan/z"
+  "PatrickF1/fzf.fish"
+  "jorgebucaran/nvm.fish"
 )
 
-for cmd in "${fish_commands[@]}"; do
-  if ! fish -c "$cmd"; then
-    echo "Failed to execute fish command: $cmd" >&2
+for plugin in "${fisher_plugins[@]}"; do
+  if ! fish -c "fisher install $plugin"; then
+    echo "Failed to install fisher plugin: $plugin" >&2
     exit 1
   fi
 done
@@ -279,7 +283,7 @@ echo "Syncing Windows Terminal settings..."
 
 if grep -qi microsoft /proc/version; then
   # Get Windows username from environment variable
-  windows_username=$(cmd.exe /c "echo %USERNAME%" 2>/dev/null | tr -d '\r')
+  windows_username=$(powershell.exe '$env:UserName' | tr -d '\r')
 
   # Windows Terminal settings location (different paths for different Windows versions)
   windows_terminal_settings="/mnt/c/Users/$windows_username/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
@@ -310,14 +314,4 @@ if grep -qi microsoft /proc/version; then
   fi
 else
   echo "Not running in WSL, skipping Windows Terminal settings sync."
-fi
-
-echo "Changing default shell to fish..."
-if ! chsh -s $(which fish); then
-  echo "Automatic shell change failed. You can change it manually later with:"
-  echo "chsh -s $(which fish)"
-  echo "Or add this to your ~/.bashrc:"
-  echo "if [ -t 1 ]; then exec fish; fi"
-  # Continue script despite chsh failure
-  set +e
 fi
