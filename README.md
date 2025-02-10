@@ -50,7 +50,6 @@ cat d4.sh
 #### 3. Make it executable:
 
 ```bash
-bash
 chmod +x d4.sh
 ```
 

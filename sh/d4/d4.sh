@@ -8,18 +8,6 @@ error_handler() {
 }
 trap 'error_handler ${LINENO}' ERR
 
-# Verify sudo access before starting
-if ! sudo -v; then
-  echo "This script requires sudo privileges"
-  exit 1
-fi
-
-# Check internet connection
-if ! ping -c 1 google.com >/dev/null 2>&1; then
-  echo "No internet connection. This script requires internet access."
-  exit 1
-fi
-
 # Clear the screen and show prompts clearly
 clear
 echo "==================================="
@@ -27,6 +15,9 @@ echo "Git Configuration Setup"
 echo "==================================="
 
 # Get user info for Git configurations with validation
+git_username=""
+git_email=""
+
 while [ -z "$git_username" ]; do
   read -p "Enter your Git username: " git_username
   if [ -z "$git_username" ]; then
@@ -47,6 +38,18 @@ echo "Username: $git_username"
 echo "Email: $git_email"
 echo "==================================="
 read -p "Press Enter to continue..."
+
+# Verify sudo access before starting
+if ! sudo -v; then
+  echo "This script requires sudo privileges"
+  exit 1
+fi
+
+# Check internet connection
+if ! ping -c 1 google.com >/dev/null 2>&1; then
+  echo "No internet connection. This script requires internet access."
+  exit 1
+fi
 
 # Update and upgrade system
 sudo apt update && sudo apt upgrade -y
@@ -99,21 +102,26 @@ fish -c "fisher install jorgebucaran/nvm.fish"
 fish -c "nvm install lts"
 fish -c "nvm use lts"
 
-# Clone dotfiles
-# Check for existing files and rename them with '_' prefix if they exist
-# Get list of files in the dotfiles repo
-dotfiles_list=$(git --git-dir=$HOME/.dotfiles --work-tree=$HOME ls-tree -r HEAD --name-only)
+# Clone dotfiles with conflict handling
+echo "Setting up dotfiles..."
+dotfiles_dir="$HOME/.dotfiles"
+conflict_files=(
+  "$HOME/.profile.fish"
+  "$HOME/.config/fish/config.fish"
+  "$HOME/.config/starship.toml"
+)
 
-# Clone dotfiles with improved backup
-backup_suffix=$(date +%Y%m%d_%H%M%S)
-for file in $dotfiles_list; do
-  if [ -e "$HOME/$file" ]; then
-    mv "$HOME/$file" "$HOME/${file}_backup_${backup_suffix}"
-    echo "Backed up existing file: $file -> ${file}_backup_${backup_suffix}"
+# Check for and rename conflicting files
+for file in "${conflict_files[@]}"; do
+  if [ -e "$file" ]; then
+    new_name="$(dirname "$file")/_original-$(basename "$file")"
+    echo "Renaming existing $file to $new_name to prevent conflicts"
+    mv "$file" "$new_name"
   fi
 done
 
-git clone --bare https://github.com/D4nielJ/d4-fish.git $HOME/.dotfiles
+# Clone the bare repository
+git clone --bare https://github.com/D4nielJ/d4-fish.git "$dotfiles_dir"
 
 echo "Changing default shell to fish..."
 if ! chsh -s $(which fish); then
