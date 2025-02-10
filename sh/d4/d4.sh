@@ -10,7 +10,7 @@ trap 'error_handler ${LINENO}' ERR
 
 echo "check if running as administrator"
 admin_check=$(powershell.exe -command "([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)" 2>/dev/null || echo "False")
-if ! echo "$admin_check" | grep -q "True"; then
+if ! echo "$admin_check" | grep "True"; then
   echo "Error: This script must be run from an administrator Windows Terminal" >&2
   echo "Please restart Windows Terminal as administrator and try again" >&2
   exit 1
