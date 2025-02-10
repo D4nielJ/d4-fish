@@ -8,6 +8,18 @@ error_handler() {
 }
 trap 'error_handler ${LINENO}' ERR
 
+# Check if running as administrator
+if ! powershell.exe -command "([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)" | grep -q "True"; then
+  echo "Error: This script must be run from an administrator Windows Terminal" >&2
+  echo "Please restart Windows Terminal as administrator and try again" >&2
+  exit 1
+fi
+
+if ! grep -qi microsoft /proc/version; then
+  echo "Error: this script is thought for running in WSL Ubuntu environments"
+  exit 1
+fi
+
 # Validate environment
 USER_HOME="${HOME:-}"
 if [ -z "$USER_HOME" ]; then
@@ -90,14 +102,10 @@ git config --global alias.lg2 "log --graph --abbrev-commit --decorate --format=f
 git config --global alias.lg "lg1"
 
 # WSL-specific Git credential helper
-if grep -qi microsoft /proc/version; then
-  if [ -f "/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe" ]; then
-    git config --global credential.helper "/mnt/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe"
-  else
-    echo "Warning: Git Credential Manager not found at expected location" >&2
-  fi
+if [ -f "/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe" ]; then
+  git config --global credential.helper "/mnt/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe"
 else
-  echo "Not running in WSL, skipping Windows-specific Git credential helper"
+  echo "Warning: Git Credential Manager not found at expected location" >&2
 fi
 
 # Install Starship
@@ -108,12 +116,27 @@ fi
 
 # Install essential packages
 packages="eza neofetch bat fzf fd-find neovim jq unzip"
+available_packages=""
+
+echo "Checking package availability..."
 for package in $packages; do
-  if ! apt-cache show "$package" >/dev/null 2>&1; then
+  if apt-cache show "$package" >/dev/null 2>&1; then
+    available_packages="$available_packages $package"
+  else
     echo "Warning: Package $package not found in repositories"
   fi
 done
-sudo apt install -y $packages
+
+if [ -n "$available_packages" ]; then
+  echo "Installing available packages:$available_packages"
+  if ! sudo apt install -y $available_packages; then
+    echo "Error: Failed to install some packages" >&2
+    exit 1
+  fi
+else
+  echo "No packages available to install" >&2
+  exit 1
+fi
 
 # Fix bat alias
 mkdir -p "$USER_HOME/.local/bin"
@@ -199,105 +222,76 @@ if ! setup_dotfiles; then
   exit 1
 fi
 
-# Configure git for dotfiles
-git --git-dir="$dotfiles_dir" --work-tree="$USER_HOME" config --local status.showUntrackedFiles no
-echo "Dotfiles setup completed successfully"
-
 # Install SpaceMono Nerd Font (Windows)
 echo "Installing SpaceMono Nerd Font..."
 
-if grep -qi microsoft /proc/version; then
-  temp_dir=$(mktemp -d)
-  font_zip="$temp_dir/SpaceMono.zip"
-  font_dir="$temp_dir/SpaceMono"
-  windows_font_dir="/mnt/c/Windows/Fonts"
+temp_dir=$(mktemp -d)
+font_zip="$temp_dir/SpaceMono.zip"
+font_dir="$temp_dir/SpaceMono"
+windows_font_dir="/mnt/c/Windows/Fonts"
 
-  if [ ! -d "$windows_font_dir" ]; then
-    echo "Error: Cannot access Windows Fonts directory" >&2
-    exit 1
-  fi
-
-  if ! curl -L "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/SpaceMono.zip" -o "$font_zip"; then
-    echo "Failed to download SpaceMono font" >&2
-    exit 1
-  fi
-
-  if ! unzip -q "$font_zip" -d "$font_dir"; then
-    echo "Failed to extract font archive" >&2
-    exit 1
-  fi
-
-  find "$font_dir" -name "*.ttf" -exec cp {} "$windows_font_dir/" \;
-  rm -rf "$temp_dir"
-
-  echo "SpaceMono Nerd Font installed successfully."
-  # Create temporary directory
-  temp_dir=$(mktemp -d)
-  font_zip="$temp_dir/SpaceMono.zip"
-  font_dir="$temp_dir/SpaceMono"
-
-  # Windows Fonts directory path from WSL
-  windows_font_dir="/mnt/c/Windows/Fonts"
-
-  # Check if we can access the Windows directory
-  if [ ! -d "$windows_font_dir" ]; then
-    echo "Error: Cannot access Windows Fonts directory"
-    exit 1
-  fi
-
-  # Download the font
-  curl -L "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/SpaceMono.zip" -o "$font_zip"
-
-  # Extract fonts
-  unzip -q "$font_zip" -d "$font_dir"
-
-  # Install fonts to Windows directory
-  echo "Copying fonts to Windows..."
-  find "$font_dir" -name "*.ttf" -exec cp {} "$windows_font_dir/" \;
-
-  # Clean up
-  rm -rf "$temp_dir"
-
-  echo "SpaceMono Nerd Font installed successfully."
-  echo "Note: You may need to restart your Windows terminal for the changes to take effect."
-else
-  echo "Not running in WSL, skipping Windows font installation."
+if [ ! -d "$windows_font_dir" ]; then
+  echo "Error: Cannot access Windows Fonts directory" >&2
+  exit 1
 fi
 
-# Sync Windows Terminal settings
-echo "Syncing Windows Terminal settings..."
+if ! curl -L "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/SpaceMono.zip" -o "$font_zip"; then
+  echo "Failed to download SpaceMono font" >&2
+  exit 1
+fi
 
-if grep -qi microsoft /proc/version; then
-  # Get Windows username from environment variable
-  windows_username=$(powershell.exe '$env:UserName' | tr -d '\r')
+if ! unzip -q "$font_zip" -d "$font_dir"; then
+  echo "Failed to extract font archive" >&2
+  exit 1
+fi
 
-  # Windows Terminal settings location (different paths for different Windows versions)
-  windows_terminal_settings="/mnt/c/Users/$windows_username/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
-  windows_terminal_settings_preview="/mnt/c/Users/$windows_username/AppData/Local/Packages/Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe/LocalState/settings.json"
+# Copy fonts and register them with Windows
+find "$font_dir" -name "*.ttf" -exec sh -c '
+  font_file="$1"
+  font_name=$(basename "$font_file")
+  windows_path=$(wslpath -w "$font_file")
+  
+  # Register the font using PowerShell
+  powershell.exe -command "
+    \$fontFile = \"$windows_path\";
+    \$objShell = New-Object -ComObject Shell.Application;
+    \$objFolder = \$objShell.Namespace(0x14);
+    \$objFolder.CopyHere(\$fontFile, 0x14);
+  " 
+' -- {} "$windows_font_dir" \;
 
-  # Source settings file
-  dotfiles_settings="$HOME/.config/terminal/settings.json"
+rm -rf "$temp_dir"
 
-  if [ -f "$dotfiles_settings" ]; then
-    # Backup existing settings if they exist
-    for settings_path in "$windows_terminal_settings" "$windows_terminal_settings_preview"; do
-      if [ -f "$settings_path" ]; then
-        backup_path="${settings_path}.backup-$(date +%Y%m%d_%H%M%S)"
-        echo "Backing up existing settings to: $backup_path"
-        cp "$settings_path" "$backup_path"
+echo "SpaceMono Nerd Font installed successfully."
+echo "Note: You may need to restart your Windows terminal for the changes to take effect."
 
-        echo "Copying new settings to: $settings_path"
-        cp "$dotfiles_settings" "$settings_path"
+# Get Windows username from environment variable
+windows_username=$(powershell.exe '$env:UserName' | tr -d '\r')
 
-        # Ensure proper permissions
-        chmod 644 "$settings_path"
-      fi
-    done
-    echo "Windows Terminal settings updated successfully."
-    echo "Note: You may need to restart Windows Terminal for the changes to take effect."
-  else
-    echo "Warning: Terminal settings file not found at $dotfiles_settings"
-  fi
+# Windows Terminal settings location (different paths for different Windows versions)
+windows_terminal_settings="/mnt/c/Users/$windows_username/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
+windows_terminal_settings_preview="/mnt/c/Users/$windows_username/AppData/Local/Packages/Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe/LocalState/settings.json"
+
+# Source settings file
+dotfiles_settings="$HOME/.config/terminal/settings.json"
+
+if [ -f "$dotfiles_settings" ]; then
+  # Backup existing settings if they exist
+  for settings_path in "$windows_terminal_settings" "$windows_terminal_settings_preview"; do
+    if [ -f "$settings_path" ]; then
+      backup_path="${settings_path}.backup-$(date +%Y%m%d_%H%M%S)"
+      echo "Backing up existing settings to: $backup_path"
+      cp "$settings_path" "$backup_path"
+
+      echo "Copying new settings to: $settings_path"
+      cp "$dotfiles_settings" "$settings_path"
+
+      # Ensure proper permissions
+      chmod 644 "$settings_path"
+    fi
+  done
+  echo "Windows Terminal settings updated successfully."
+  echo "Note: You may need to restart Windows Terminal for the changes to take effect."
 else
-  echo "Not running in WSL, skipping Windows Terminal settings sync."
+  echo "Warning: Terminal settings file not found at $dotfiles_settings"
 fi
