@@ -30,7 +30,7 @@ How to setup WSL Ubuntu and fish for software development in Windows 11.
 ### Option 1: Direct execution (Quick install)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/D4nielJ/d4-fish/main/sh/d4/d4.sh | bash
+curl -fsSL https://raw.githubusercontent.com/D4nielJ/d4-fish/main/sh/d4/d4.sh | bash -s "Your Name" "your.email@example.com"
 ```
 
 ### Option 2: Manual inspection (Recommended)
