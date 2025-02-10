@@ -8,6 +8,13 @@ error_handler() {
 }
 trap 'error_handler ${LINENO}' ERR
 
+# Validate environment
+USER_HOME="${HOME:-}"
+if [ -z "$USER_HOME" ]; then
+  echo "Error: HOME environment variable not set" >&2
+  exit 1
+fi
+
 # Get Git credentials from arguments or prompt
 git_username="${1:-}"
 git_email="${2:-}"
