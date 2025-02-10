@@ -20,9 +20,33 @@ if ! ping -c 1 google.com >/dev/null 2>&1; then
   exit 1
 fi
 
-# Get user info for Git configurations
-read -p "Enter your Git username: " git_username
-read -p "Enter your Git email: " git_email
+# Clear the screen and show prompts clearly
+clear
+echo "==================================="
+echo "Git Configuration Setup"
+echo "==================================="
+
+# Get user info for Git configurations with validation
+while [ -z "$git_username" ]; do
+  read -p "Enter your Git username: " git_username
+  if [ -z "$git_username" ]; then
+    echo "Username cannot be empty. Please try again."
+  fi
+done
+
+while [ -z "$git_email" ]; do
+  read -p "Enter your Git email: " git_email
+  if [ -z "$git_email" ]; then
+    echo "Email cannot be empty. Please try again."
+  fi
+done
+
+# Store the values for confirmation
+echo "Git configuration values:"
+echo "Username: $git_username"
+echo "Email: $git_email"
+echo "==================================="
+read -p "Press Enter to continue..."
 
 # Update and upgrade system
 sudo apt update && sudo apt upgrade -y
@@ -30,7 +54,6 @@ sudo apt autoremove -y
 
 # Install fish shell and set as default
 sudo apt install fish -y
-chsh -s $(which fish)
 
 # Git configurations
 git config --global user.name "$git_username"
@@ -91,3 +114,13 @@ for file in $dotfiles_list; do
 done
 
 git clone --bare https://github.com/D4nielJ/d4-fish.git $HOME/.dotfiles
+
+echo "Changing default shell to fish..."
+if ! chsh -s $(which fish); then
+  echo "Automatic shell change failed. You can change it manually later with:"
+  echo "chsh -s $(which fish)"
+  echo "Or add this to your ~/.bashrc:"
+  echo "if [ -t 1 ]; then exec fish; fi"
+  # Continue script despite chsh failure
+  set +e
+fi
