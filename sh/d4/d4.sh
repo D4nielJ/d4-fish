@@ -8,39 +8,48 @@ error_handler() {
 }
 trap 'error_handler ${LINENO}' ERR
 
-# Validate environment
-USER_HOME="${HOME:-}"
-if [ -z "$USER_HOME" ]; then
-  echo "Error: HOME environment variable not set" >&2
-  exit 1
+# Get Git credentials from arguments or prompt
+git_username="${1:-}"
+git_email="${2:-}"
+
+# Function to validate email
+validate_email() {
+  local email="$1"
+  [[ "$email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]
+}
+
+# If running interactively, prompt for missing values
+if [ -t 0 ]; then
+  while [ -z "$git_username" ]; do
+    read -rp "Enter your Git username: " git_username
+    if [ -z "$git_username" ]; then
+      echo "Username cannot be empty. Please try again." >&2
+    fi
+  done
+
+  while [ -z "$git_email" ]; do
+    read -rp "Enter your Git email: " git_email
+    if [ -z "$git_email" ]; then
+      echo "Email cannot be empty. Please try again." >&2
+    elif ! validate_email "$git_email"; then
+      echo "Invalid email format. Please try again." >&2
+      git_email=""
+    fi
+  done
+else
+  # If not interactive and arguments are missing, show usage
+  if [ -z "$git_username" ] || [ -z "$git_email" ]; then
+    echo "Usage: $0 <git_username> <git_email>"
+    echo "Example: $0 \"John Doe\" \"john@example.com\""
+    exit 1
+  fi
+
+  # Validate email when provided as argument
+  if ! validate_email "$git_email"; then
+    echo "Error: Invalid email format" >&2
+    exit 1
+  fi
 fi
-
-# Clear screen and show prompts
-clear
-echo "==================================="
-echo "Git Configuration Setup"
-echo "==================================="
-
-# Get and validate Git credentials
-git_username=""
-git_email=""
-
-while [ -z "$git_username" ]; do
-  read -rp "Enter your Git username: " git_username
-  if [ -z "$git_username" ]; then
-    echo "Username cannot be empty. Please try again." >&2
-  fi
-done
-
-while [ -z "$git_email" ]; do
-  read -rp "Enter your Git email: " git_email
-  if [ -z "$git_email" ]; then
-    echo "Email cannot be empty. Please try again." >&2
-  elif [[ ! "$git_email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
-    echo "Invalid email format. Please try again." >&2
-    git_email=""
-  fi
-done
 
 # Confirm values
 echo "Git configuration values:"
