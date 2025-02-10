@@ -2,6 +2,58 @@
 
 How to setup WSL Ubuntu and fish for software development in Windows 11.
 
+## Running D4
+
+### Requirements
+
+- Ubuntu or Debian-based Linux distribution
+- Sudo privileges
+- Internet connection
+
+### What the script will do:
+
+- Install and configure Fish shell
+- Set up Git with your credentials
+- Install development tools and utilities
+- Configure Starship prompt
+- Set up Node.js environment with nvm
+- Install pnpm package manager
+- Set up Fisher plugin manager with useful plugins
+- Clone and configure dotfiles
+
+### Option 1: Direct execution (Quick install)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/D4nielJ/d4-fish/main/sh/d4/d4.sh | bash
+```
+
+### Option 2: Manual inspection (Recommended)
+
+#### 1. Download the script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/D4nielJ/d4-fish/main/sh/d4/d4.sh -o d4.sh
+```
+
+#### 2. Review the script contents:
+
+```bash
+cat d4.sh
+```
+
+#### 3. Make it executable:
+
+```bash
+bash
+chmod +x d4.sh
+```
+
+#### 4. Run the script:
+
+```bash
+./d4.sh
+```
+
 ## Manual setup
 
 ### 1. Install WSL ubuntu.
