@@ -57,6 +57,13 @@ sudo apt install jq
 curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher
 ```
 
+Bat has issues with Ubuntu, this might be required:
+
+```
+mkdir -p ~/.local/bin
+ln -s /usr/bin/batcat ~/.local/bin/bat
+```
+
 #### nvm:
 
 ```fish

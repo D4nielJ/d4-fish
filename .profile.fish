@@ -1,5 +1,12 @@
 # variables
 set --universal nvm_default_version lts
+set -gx STARSHIP_CONFIG ~/.config/starship.toml
+set -gx FISH_CONFIG ~/.config/fish/config.fish
+set -gx FISH_PROFILE ~/.profile.fish
+
+if test -d ~/.local/bin
+    set -gx PATH ~/.local/bin $PATH
+end
 
 # Add this to your config.fish to make Windows variables available
 function get_win_var -a var_name
@@ -104,8 +111,9 @@ abbr pn pnpm
 abbr dlx 'pnpm dlx'
 
 # miscelanous
-abbr pp 'code ~/.profile.fish'
-abbr rld 'source ~/.config/fish/config.fish'
+abbr pp 'code $FISH_PROFILE'
+abbr rld 'source $FISH_CONFIG'
+abbr theme 'code $STARSHIP_CONFIG'
 abbr vim nvim
 abbr g git
 abbr idea idea64.exe
