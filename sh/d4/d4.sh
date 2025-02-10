@@ -8,11 +8,6 @@ error_handler() {
 }
 trap 'error_handler ${LINENO}' ERR
 
-if ! sudo -n true 2>/dev/null; then
-  echo "Error: This script requires sudo privileges. Please run as a user with sudo access." >&2
-  exit 1
-fi
-
 # Validate environment
 USER_HOME="${HOME:-}"
 if [ -z "$USER_HOME" ]; then
@@ -141,18 +136,9 @@ if ! fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/mai
 fi
 
 # Install fisher plugins
-fisher_plugins=(
-  "jethrokuan/z"
-  "PatrickF1/fzf.fish"
-  "jorgebucaran/nvm.fish"
-)
-
-for plugin in "${fisher_plugins[@]}"; do
-  if ! fish -c "fisher install $plugin"; then
-    echo "Failed to install fisher plugin: $plugin" >&2
-    exit 1
-  fi
-done
+fish -c "fisher install jethrokuan/z"
+fish -c "fisher install PatrickF1/fzf.fish"
+fish -c "fisher install jorgebucaran/nvm.fish"
 
 # Install Node.js using fish
 if ! fish -c "nvm install lts && nvm use lts"; then
