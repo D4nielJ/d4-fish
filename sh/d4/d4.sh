@@ -8,18 +8,22 @@ error_handler() {
 }
 trap 'error_handler ${LINENO}' ERR
 
-# Check if running as administrator
-if ! powershell.exe -command "([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)" | grep -q "True"; then
+echo "check if running as administrator"
+admin_check=$(powershell.exe -command "([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)" 2>/dev/null || echo "False")
+if ! echo "$admin_check" | grep -q "True"; then
   echo "Error: This script must be run from an administrator Windows Terminal" >&2
   echo "Please restart Windows Terminal as administrator and try again" >&2
   exit 1
 fi
 
+echo "checking if running in WSL"
+# Check if running in WSL
 if ! grep -qi microsoft /proc/version; then
   echo "Error: this script is thought for running in WSL Ubuntu environments"
   exit 1
 fi
 
+echo "Validating USER"
 # Validate environment
 USER_HOME="${HOME:-}"
 if [ -z "$USER_HOME" ]; then
