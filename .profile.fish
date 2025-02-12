@@ -8,12 +8,13 @@ if test -d ~/.local/bin
     set -gx PATH ~/.local/bin $PATH
 end
 
-# Add this to your config.fish to make Windows variables available
-function get_win_var -a var_name
+set -g bell_style none
+
+function get_win_var -d "Retrieve a Windows environment variable" -a var_name
     cmd.exe /c "echo %$var_name%" 2>/dev/null | tr -d '\r'
 end
 
-function wcd -a directory
+function wcd -d "Change directory to a Windows path in WSL" -a directory
     if test -z "$directory"
         echo "Usage: wcd <windows-path>"
         return 1
@@ -27,7 +28,7 @@ function wcd -a directory
     end
 end
 
-function take
+function take -d "Create a directory and change into it" -a directory
     if test -z "$argv"
         echo "Usage: take <directory>"
         return 1
@@ -38,7 +39,6 @@ end
 function init_prettier -d "Initialize .prettierrc in current directory"
     cp $HOME/.config/prettier/.prettierrc.json .prettierrc.json
 end
-
 # Usage:
 # Stop-Port 3000
 # Stop-Port 3000,3001,3002
@@ -59,10 +59,9 @@ function stop_port -d "Use it to stop the process in certain port"
     end
 end
 
-bind \ec fish_clipboard_copy
-
 # abbreviatures
 # eza functions
+abbr exa eza
 abbr ll 'eza -l --header --icons --git'
 abbr ls 'eza -l --header --icons --git'
 abbr lt 'eza -l --header --icons --git --tree'

@@ -26,9 +26,6 @@ if status is-interactive
         echo "Warning: ~/.profile.fish not found"
     end
 
-    # Enable autosuggestions
-    set -g fish_autosuggestion_enabled 1
-
     # ~/.config/fish/config.fish
     starship init fish | source
 end
