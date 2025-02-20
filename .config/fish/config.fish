@@ -36,3 +36,6 @@ if not string match -q -- $PNPM_HOME $PATH
     set -gx PATH "$PNPM_HOME" $PATH
 end
 # pnpm end
+
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"

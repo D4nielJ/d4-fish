@@ -3,6 +3,7 @@ set --universal nvm_default_version lts
 set -gx STARSHIP_CONFIG ~/.config/starship.toml
 set -gx FISH_CONFIG ~/.config/fish/config.fish
 set -gx FISH_PROFILE ~/.profile.fish
+set -p PATH "/mnt/c/Program Files/Zen Browser" $PATH
 
 if test -d ~/.local/bin
     set -gx PATH ~/.local/bin $PATH
