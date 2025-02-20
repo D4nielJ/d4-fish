@@ -64,6 +64,21 @@ function itl -d "Opens intellij-idea-community"
     nohup intellij-idea-community $argv >/dev/null 2>&1 & disown
 end
 
+function wtop
+    deno run --allow-env --allow-read --allow-write --allow-sys jsr:@d4nielj/wtermin4l wtop
+end
+
+function ptow
+    deno run --allow-env --allow-read --allow-write --allow-sys jsr:@d4nielj/wtermin4l ptow
+end
+
+#dotfiles git manager
+function dotfiles --wraps=git -d 'Manage dotfiles repository with home as working directory'
+    git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME $argv
+end
+
+abbr dt dotfiles
+
 # abbreviatures
 # eza functions
 abbr exa eza
@@ -105,10 +120,6 @@ abbr pr 'wcd (get_win_var USERPROFILE)/projects'
 abbr dev 'cd ~/dev'
 abbr dwl 'wcd (get_win_var USERPROFILE)/downloads'
 abbr cfg 'cd ~/.config'
-
-#dotfiles git manager
-abbr dotfiles 'git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-abbr dt 'git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
 # pnpm
 abbr pn pnpm
