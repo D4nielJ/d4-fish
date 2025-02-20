@@ -60,6 +60,10 @@ function stop_port -d "Use it to stop the process in certain port"
     end
 end
 
+function itl -d "Opens intellij-idea-community"
+    nohup intellij-idea-community $argv >/dev/null 2>&1 & disown
+end
+
 # abbreviatures
 # eza functions
 abbr exa eza
@@ -116,9 +120,9 @@ abbr rld 'source $FISH_CONFIG'
 abbr theme 'code $STARSHIP_CONFIG'
 abbr vim nvim
 abbr g git
-abbr idea idea64.exe
 abbr ii explorer.exe
 abbr dn deno
+abbr idea idea64.exe
 
 # Insecure otaku stuff (CRINGE):
 function genshin
