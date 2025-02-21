@@ -4,6 +4,7 @@ set -gx STARSHIP_CONFIG ~/.config/starship.toml
 set -gx FISH_CONFIG ~/.config/fish/config.fish
 set -gx FISH_PROFILE ~/.profile.fish
 set -p PATH "/mnt/c/Program Files/Zen Browser" $PATH
+set -gx EDITOR vim
 
 if test -d ~/.local/bin
     set -gx PATH ~/.local/bin $PATH
@@ -64,12 +65,8 @@ function itl -d "Opens intellij-idea-community"
     nohup intellij-idea-community $argv >/dev/null 2>&1 & disown
 end
 
-function wtop
-    deno run --allow-env --allow-read --allow-write --allow-sys jsr:@d4nielj/wtermin4l wtop
-end
-
-function ptow
-    deno run --allow-env --allow-read --allow-write --allow-sys jsr:@d4nielj/wtermin4l ptow
+function wtermin4l -d "Wtermin4l to admin the windows terminal settings"
+    deno run --allow-env --allow-read --allow-write --allow-sys jsr:@d4nielj/wtermin4l $argv
 end
 
 #dotfiles git manager
@@ -98,6 +95,8 @@ abbr add 'git add'
 abbr gco 'git checkout'
 abbr gcob 'git checkout -b'
 abbr stat 'git status'
+abbr commit 'git commit'
+abbr cmt 'git commit'
 abbr gcm 'git commit'
 abbr glog 'git log'
 abbr lg 'git log --pretty=format:"%C(auto)%h %C(yellow)%d %C(reset)%s %C(bold blue)<%an>%C(reset)" --graph'
@@ -134,6 +133,7 @@ abbr g git
 abbr ii explorer.exe
 abbr dn deno
 abbr idea idea64.exe
+abbr wt wtermin4l
 
 # Insecure otaku stuff (CRINGE):
 function genshin
