@@ -236,38 +236,44 @@ windows_font_dir="/mnt/c/Windows/Fonts"
 
 if [ ! -d "$windows_font_dir" ]; then
   echo "Error: Cannot access Windows Fonts directory" >&2
-  exit 1
-fi
+  echo "Font installation aborted" >&2
+else
+  # Check if the font is already installed
+  if powershell.exe -command "Get-ChildItem -Path C:\\Windows\\Fonts -Include *SpaceMono*.ttf" | grep -q "SpaceMono"; then
+    echo "SpaceMono Nerd Font is already installed."
+    rm -rf "$temp_dir"
+  else
+    if ! curl -L "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/SpaceMono.zip" -o "$font_zip"; then
+      echo "Failed to download SpaceMono font" >&2
+      exit 1
+    fi
 
-if ! curl -L "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/SpaceMono.zip" -o "$font_zip"; then
-  echo "Failed to download SpaceMono font" >&2
-  exit 1
-fi
+    if ! unzip -q "$font_zip" -d "$font_dir"; then
+      echo "Failed to extract font archive" >&2
+      exit 1
+    fi
 
-if ! unzip -q "$font_zip" -d "$font_dir"; then
-  echo "Failed to extract font archive" >&2
-  exit 1
-fi
+    # Copy fonts and register them with Windows
+    find "$font_dir" -name "*.ttf" -exec sh -c '
+    font_file="$1"
+    font_name=$(basename "$font_file")
+    windows_path=$(wslpath -w "$font_file")
+    
+    # Register the font using PowerShell
+    powershell.exe -command "
+      \$fontFile = \"$windows_path\";
+      \$objShell = New-Object -ComObject Shell.Application;
+      \$objFolder = \$objShell.Namespace(0x14);
+      \$objFolder.CopyHere(\$fontFile, 0x14);
+    " 
+  ' -- {} "$windows_font_dir" \;
 
-# Copy fonts and register them with Windows
-find "$font_dir" -name "*.ttf" -exec sh -c '
-  font_file="$1"
-  font_name=$(basename "$font_file")
-  windows_path=$(wslpath -w "$font_file")
-  
-  # Register the font using PowerShell
-  powershell.exe -command "
-    \$fontFile = \"$windows_path\";
-    \$objShell = New-Object -ComObject Shell.Application;
-    \$objFolder = \$objShell.Namespace(0x14);
-    \$objFolder.CopyHere(\$fontFile, 0x14);
-  " 
-' -- {} "$windows_font_dir" \;
+    echo "SpaceMono Nerd Font installed successfully."
+    echo "Note: You may need to restart your Windows terminal for the changes to take effect."
+  fi
+fi
 
 rm -rf "$temp_dir"
-
-echo "SpaceMono Nerd Font installed successfully."
-echo "Note: You may need to restart your Windows terminal for the changes to take effect."
 
 # Get Windows username from environment variable
 windows_username=$(powershell.exe '$env:UserName' | tr -d '\r')

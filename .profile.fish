@@ -74,6 +74,11 @@ function dotfiles --wraps=git -d 'Manage dotfiles repository with home as workin
     git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME $argv
 end
 
+# Docker
+function docker --wraps=docker.exe -d 'Docker wrapper for WSL'
+    docker.exe $argv
+end
+
 abbr dt dotfiles
 
 # abbreviatures
@@ -144,7 +149,32 @@ function zzz
     powershell.exe -c "iwr -useb stardb.gg/signal | iex"
 end
 
+# Directory persistence
+function save_dir --on-variable PWD
+    echo "$PWD" >"$HOME/.last_dir"
+end
+
+function restore_dir
+    set -l session_file "/tmp/fish_session_$USER"
+    set -l last_dir_file "$HOME/.last_dir"
+
+    if test -f $session_file
+        # Not first login, restore previous directory
+        if test -f $last_dir_file
+            set -l last_dir (cat $last_dir_file)
+            if test -d $last_dir
+                cd $last_dir
+            end
+        end
+    else
+        # First login of the session, create session file and go home
+        touch $session_file
+        cd $HOME
+    end
+end
+
 # End
 function fish_greeting
     echo "🌿 Breathe in. Breathe out. Code with intention."
+    restore_dir
 end

@@ -30,7 +30,10 @@ How to setup WSL Ubuntu and fish for software development in Windows 11.
 ### Option 1: Direct execution (Quick install)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/D4nielJ/d4-fish/main/sh/d4/d4.sh | bash -s "Your Name" "your.email@example.com"
+curl -fsSL https://raw.githubusercontent.com/D4nielJ/d4-fish/main/sh/d4/d4.sh -o setup.sh && bash setup.sh "Your Name" "your.email@example.com"
+
+# Change manually default shell:
+chsh -s $(which fish)
 ```
 
 ### Option 2: Manual inspection (Recommended)
@@ -67,7 +70,7 @@ chmod +x d4.sh
 sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 sudo apt install fish
-chsh -s (which fish)
+chsh -s $(which fish)
 ```
 
 #### 2. Git configurations:
