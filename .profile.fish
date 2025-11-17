@@ -5,6 +5,7 @@ set -gx FISH_CONFIG ~/.config/fish/config.fish
 set -gx FISH_PROFILE ~/.profile.fish
 set -p PATH "/mnt/c/Program Files/Zen Browser" $PATH
 set -gx EDITOR vim
+set -gx BROWSER "zen.exe"
 
 if test -d ~/.local/bin
     set -gx PATH ~/.local/bin $PATH
@@ -41,6 +42,25 @@ end
 function init_prettier -d "Initialize .prettierrc in current directory"
     cp $HOME/.config/prettier/.prettierrc.json .prettierrc.json
 end
+
+function open -d "Open URLs or files with Zen Browser"
+    if test (count $argv) -eq 0
+        echo "Usage: open <url|file>"
+        return 1
+    end
+    
+    for item in $argv
+        # Check if it's a URL or a local file
+        if string match -q "http*" $item
+            "$BROWSER" "$item" &
+        else if test -f "$item"
+            "$BROWSER" "file://(realpath $item)" &
+        else
+            "$BROWSER" "$item" &
+        end
+    end
+end
+
 # Usage:
 # Stop-Port 3000
 # Stop-Port 3000,3001,3002
@@ -139,6 +159,8 @@ abbr ii explorer.exe
 abbr dn deno
 abbr idea idea64.exe
 abbr wt wtermin4l
+abbr browse open
+abbr zen 'zen.exe'
 
 # Insecure otaku stuff (CRINGE):
 function genshin

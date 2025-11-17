@@ -27,6 +27,11 @@ How to setup WSL Ubuntu and fish for software development in Windows 11.
 
 #### 2. Make Ubuntu your default shell in windows Terminal.
 
+#### 3. Install Git for Windows through powershell
+```bash
+winget install --id Git.Git -e --source winget
+```
+
 ### Option 1: Direct execution (Quick install)
 
 ```bash
