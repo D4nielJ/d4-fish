@@ -300,7 +300,7 @@ if [ -f "$dotfiles_settings" ]; then
       cp "$settings_path" "$backup_path"
 
       echo "Using wtermin4l for setting up terminal settings: $settings_path"
-      deno run --allow-env --allow-read --allow-write --allow-sys jsr:@d4nielj/wtermin4l ptow
+      "$HOME/.deno/bin/deno" run --allow-env --allow-read --allow-write --allow-sys jsr:@d4nielj/wtermin4l ptow
 
       # Ensure proper permissions
       chmod 644 "$settings_path"
