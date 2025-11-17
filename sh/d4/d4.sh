@@ -156,6 +156,12 @@ if ! curl -fsSL https://deno.land/install.sh | sh; then
   exit 1
 fi
 
+# Install Brew
+if ! /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; then
+  echo "Failed to install Homebrew" >&2
+  exit 1
+fi
+
 # Install pnpm
 if ! curl -fsSL https://get.pnpm.io/install.sh | sh -; then
   echo "Failed to install pnpm" >&2
