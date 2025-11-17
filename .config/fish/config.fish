@@ -31,7 +31,7 @@ if status is-interactive
 end
 
 # pnpm
-set -gx PNPM_HOME "/home/d4nielj/.local/share/pnpm"
+set -gx PNPM_HOME "/home/$USER/.local/share/pnpm"
 if not string match -q -- $PNPM_HOME $PATH
     set -gx PATH "$PNPM_HOME" $PATH
 end
