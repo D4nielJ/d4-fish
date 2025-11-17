@@ -118,6 +118,12 @@ if ! curl -sS https://starship.rs/install.sh | sh; then
   exit 1
 fi
 
+# Install Deno
+if ! curl -fsSL https://deno.land/install.sh | sh; then
+  echo "Failed to install Deno" >&2
+  exit 1
+fi
+
 # Install essential packages
 packages="eza neofetch bat fzf fd-find neovim jq unzip"
 available_packages=""
