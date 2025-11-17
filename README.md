@@ -36,8 +36,10 @@ winget install --id Git.Git -e --source winget
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/D4nielJ/d4-fish/main/sh/d4/d4.sh -o setup.sh && bash setup.sh "Your Name" "your.email@example.com"
+```
 
-# Change manually default shell:
+#### Change manually default shell:
+```bash
 chsh -s $(which fish)
 ```
 
