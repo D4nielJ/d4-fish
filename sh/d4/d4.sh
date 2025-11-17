@@ -118,12 +118,6 @@ if ! curl -sS https://starship.rs/install.sh | sh; then
   exit 1
 fi
 
-# Install Deno
-if ! curl -fsSL https://deno.land/install.sh | sh; then
-  echo "Failed to install Deno" >&2
-  exit 1
-fi
-
 # Install essential packages
 packages="eza neofetch bat fzf fd-find neovim jq unzip"
 available_packages=""
@@ -154,6 +148,12 @@ if [ -f "/usr/bin/batcat" ]; then
   ln -sf /usr/bin/batcat "$USER_HOME/.local/bin/bat"
 else
   echo "Warning: batcat not found at /usr/bin/batcat" >&2
+fi
+
+# Install Deno
+if ! curl -fsSL https://deno.land/install.sh | sh; then
+  echo "Failed to install Deno" >&2
+  exit 1
 fi
 
 # Install pnpm
