@@ -168,6 +168,14 @@ if ! curl -fsSL https://get.pnpm.io/install.sh | sh -; then
   exit 1
 fi
 
+# Update fish shell to latest version before installing plugins
+echo "Updating Fish shell to latest version..."
+if ! sudo apt-add-repository -y ppa:fish-shell/release-3; then
+  echo "Failed to add Fish PPA, continuing with system version"
+fi
+sudo apt update
+sudo apt install -y fish
+
 # Install fisher and plugins
 if ! fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher"; then
   echo "Failed to install fisher" >&2
